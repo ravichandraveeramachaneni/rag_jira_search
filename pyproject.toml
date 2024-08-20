@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "rag-project"
+version = "0.1.0"
+description = ""
+authors = ["Ravi Chandra Veeramachaneni <rveeramachaneni@centricsoftware.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "3.10.8"
+llama-index = "^0.9.40"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.3"
+jira = "^3.5.2"
+python-dotenv = "^1.0.1"
+flask = "^3.0.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]

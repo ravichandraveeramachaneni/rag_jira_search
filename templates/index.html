@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JIRA RAG App</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+          <div class="position-sticky pt-3">
+            <h6
+              class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
+            >
+              <span>Past Searches</span>
+            </h6>
+            <ul class="nav flex-column" id="past-searches">
+              <!-- Past searches will be populated here -->
+            </ul>
+          </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+          >
+            <h1 class="h2">JIRA RAG Search</h1>
+          </div>
+
+          <form id="search-form">
+            <div class="mb-3">
+              <label for="issue-id" class="form-label">JIRA Issue ID</label>
+              <input type="text" class="form-control" id="issue-id" required />
+            </div>
+            <div class="mb-3">
+              <label for="num-similar-issues" class="form-label"
+                >Number of Similar Issues</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="num-similar-issues"
+                value="2"
+                min="1"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+          </form>
+
+          <div id="results" class="mt-4">
+            <!-- Results will be displayed here -->
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        function loadPastSearches() {
+          $.get('/past_searches', function (data) {
+            $('#past-searches').empty();
+            data.forEach(function (search) {
+              $('#past-searches').append(
+                '<li class="nav-item"><a class="nav-link" href="#" data-issue-id="' +
+                  search.issue_id +
+                  '">' +
+                  search.issue_id +
+                  '</a></li>'
+              );
+            });
+          });
+        }
+
+        loadPastSearches();
+
+        $('#search-form').submit(function (e) {
+          e.preventDefault();
+          var issueId = $('#issue-id').val();
+          var numSimilarIssues = $('#num-similar-issues').val();
+
+          $.post(
+            '/search',
+            { issue_id: issueId, num_similar_issues: numSimilarIssues },
+            function (data) {
+              $('#results').html(
+                '<h3>Results for ' +
+                  issueId +
+                  '</h3>' +
+                  '<p><strong>Title:</strong> ' +
+                  data.title +
+                  '</p>' +
+                  '<p><strong>Description:</strong> ' +
+                  data.description +
+                  '</p>' +
+                  '<p><strong>Summary:</strong> ' +
+                  data.description_summary +
+                  '</p>' +
+                  '<h4>Similar Issues:</h4>'
+              );
+
+              data.similar_issues.forEach(function (issue) {
+                $('#results').append(
+                  '<p><strong>' +
+                    issue.id +
+                    ':</strong> ' +
+                    issue.title +
+                    '</p>'
+                );
+              });
+
+              loadPastSearches();
+            }
+          );
+        });
+
+        $(document).on('click', '#past-searches a', function (e) {
+          e.preventDefault();
+          var issueId = $(this).data('issue-id');
+          $('#issue-id').val(issueId);
+          $('#search-form').submit();
+        });
+      });
+    </script>
+  </body>
+</html>
